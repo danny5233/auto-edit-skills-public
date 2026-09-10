@@ -1,0 +1,8 @@
+interface:
+  display_name: "自動字幕製作"
+  short_description: "用ElevenLabs逐字時間與講者分軌製作繁中字幕"
+  default_prompt: "Use $make-custom-srt-subtitles to transcribe this media with ElevenLabs Scribe v2 and create verified Traditional Chinese subtitles."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+policy:
+  allow_implicit_invocation: true

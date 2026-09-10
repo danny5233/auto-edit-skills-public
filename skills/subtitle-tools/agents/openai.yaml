@@ -1,0 +1,13 @@
+interface:
+  display_name: "Subtitle Tools"
+  short_description: 依講者分軌波形與Premiere剪輯點精修剪映字幕
+  default_prompt: "Use $subtitle-tools to refine this Jianying SRT using the true speaker track waveform and matching Premiere XML."
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

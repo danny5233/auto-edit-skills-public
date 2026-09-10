@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic examples for public regression documentation",
+  "cases": [
+    {
+      "id": "retain_colloquial_modifiers",
+      "spoken": "請幫我看一下",
+      "preferred": "請幫我看一下",
+      "rejected": "請幫我看",
+      "reason": "保留有意義的口語"
+    },
+    {
+      "id": "split_instead_of_summarize",
+      "spoken": "先打開盒子 然後拿出卡片",
+      "preferred": [
+        "先打開盒子",
+        "然後拿出卡片"
+      ],
+      "rejected": "取出卡片",
+      "reason": "切句不摘要"
+    },
+    {
+      "id": "retain_spoken_word_order",
+      "spoken": "我明天我會再來",
+      "preferred": "我明天我會再來",
+      "rejected": "明天我會再來",
+      "reason": "不自行修順"
+    },
+    {
+      "id": "allow_clear_filler_removal",
+      "spoken": "嗯 請開門",
+      "preferred": "請開門",
+      "rejected": "嗯 請開門",
+      "reason": "僅刪已確認無意義填充"
+    },
+    {
+      "id": "correct_recognition_without_rewriting",
+      "spoken": "出發的時候",
+      "preferred": "出發的時候",
+      "rejected": "出發的時後",
+      "reason": "校字不改寫"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Premiere 自動粗剪"
+  short_description: "跨客戶系列的非破壞式 Premiere 自動粗剪、同步切割與標色流程"
+  default_prompt: "Use $premiere-auto-rough-cut to analyze this workspace's Premiere XML, Jianying SRT, audio, and client profile, then create a non-destructive color-labeled rough-cut XML."
+
+policy:
+  allow_implicit_invocation: true

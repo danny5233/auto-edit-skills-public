@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "profile_id": "client-series",
+  "client": {
+    "id": "client-id",
+    "name": "客戶名稱"
+  },
+  "series": {
+    "id": "series-id",
+    "name": "系列名稱"
+  },
+  "premiere": {
+    "target_tracks": [
+      "V1",
+      "A1",
+      "A2"
+    ],
+    "background_music_tracks": [],
+    "red_label": "Rose",
+    "yellow_label": "Mango",
+    "handle_frames": 3,
+    "output_suffix": "_自動粗剪"
+  },
+  "audio": {
+    "layout": "auto",
+    "tracks": [],
+    "silence_seconds": 2.0
+  },
+  "classification": {
+    "director_policy": "semantic_invalid_only",
+    "red_signals": [
+      "明確重來或不要這段",
+      "倒數與現場調度",
+      "口誤後已有完整重講",
+      "被新版本取代的重複句"
+    ],
+    "yellow_signals": [
+      "說話功能或替代關係不確定"
+    ],
+    "preserve_signals": [
+      "主角有效內容",
+      "有效提問或補充"
+    ]
+  },
+  "vocabulary": {
+    "confirmed_terms": []
+  },
+  "notes": []
+}
