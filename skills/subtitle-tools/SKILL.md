@@ -3,6 +3,10 @@ name: subtitle-tools
 description: Create, re-segment, correct, and validate Traditional Chinese SRT subtitles from a mandatory Jianying-generated SRT plus matching audio or video, following the user's production style. Use optional synchronized speaker tracks to identify the true speaker first, then use only that speaker track's waveform onset as timing authority while treating other tracks as crosstalk, overlap, or speaker-switch evidence. Use optional matching Premiere XML visible edit points for 5-frame-aware re-segmentation. Carry confirmed vocabulary and habits across episodes of the same series while isolating every episode's files, timing, decisions, and outputs under a unique job. Compare returned human-corrected SRT files with AI baselines and safely improve reusable rules. Use when asked to create or refine SRT subtitles, align them to a speaker's microphone waveform or Premiere edits, continue a subtitle series, prevent speakers from being merged, or learn from revisions. If the Jianying SRT is missing, request it before starting.
 ---
 
+## 實拍剪輯架構轉接
+
+處理實拍剪輯案件或其中的字幕子工作時，先讀 [auto-edit 共用入口](../auto-edit/SKILL.md) 與 [相容性契約](../auto-edit/references/compatibility.md)，完成或沿用同案分類确认。分層儲存、案件身份與工具路由依該契約；下文的來源、人工鎖定及品質驗證保持有效。未接入的舊案件保留原 job/profile，不自動搬移或重跑。每次新增學習先判定通則／客戶／類型／單集的主要位置，再依原 learning-loop 驗證。
+
 # 自動字幕製作
 
 以剪映產生的 SRT 作為主要文字底稿與粗時間錨點，配合最終混音及同步分軌校字、判斷講者、處理多人重疊並重建切句與時間碼。不要直接沿用剪映的既有分段。

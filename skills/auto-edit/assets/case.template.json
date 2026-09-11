@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "new-case",
+  "episode_id": "episode",
+  "title": "待命名",
+  "client_id": "unknown",
+  "type_id": "unknown",
+  "version": "v001",
+  "status": "intake",
+  "classification": {
+    "status": "proposed",
+    "path": [
+      "影片剪輯",
+      "待確認客戶",
+      "待確認類型"
+    ],
+    "confirmation": null
+  },
+  "scope": {
+    "stages": [],
+    "note": "等使用者分類回答及本案工作要求後填寫"
+  },
+  "sources": [],
+  "artifacts": []
+}

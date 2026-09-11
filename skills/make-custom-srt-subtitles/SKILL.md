@@ -3,6 +3,10 @@ name: make-custom-srt-subtitles
 description: Create, re-segment, correct, and validate Traditional Chinese SRT subtitles from ElevenLabs Scribe v2 word- or character-timestamp JSON plus matching audio or video, following the user's production style. Use multichannel transcription for isolated speaker channels and diarization for mixed audio; verify the true speaker first, then use that speaker's source track as timing authority while treating other tracks as crosstalk, overlap, or switch evidence. Use optional matching Premiere XML visible edit points for 5-frame-aware re-segmentation. Carry confirmed vocabulary and habits across episodes while isolating every job and safely learn from returned human corrections. Use when asked to transcribe, create, refine, align, validate, or learn Traditional Chinese subtitles, especially for multi-speaker footage, director instructions, overlapping speech, source-track timing, or Premiere workflows. A Jianying SRT is optional comparison material, not a prerequisite.
 ---
 
+## 實拍剪輯架構轉接
+
+處理實拍剪輯案件或其中的字幕子工作時，先讀 [auto-edit 共用入口](../auto-edit/SKILL.md) 與 [相容性契約](../auto-edit/references/compatibility.md)，完成或沿用同案分類确认。分層儲存、案件身份與工具路由依該契約；下文的來源、人工鎖定及品質驗證保持有效。未接入的舊案件保留原 job/profile，不自動搬移或重跑。每次新增學習先判定通則／客戶／類型／單集的主要位置，再依原 learning-loop 驗證。
+
 # 自動字幕製作
 
 以 ElevenLabs Scribe v2 原始 JSON 的逐字／逐字元文字、時間與講者資料建立辨識底稿，配合對應原音及同步分軌校字、判斷講者、處理多人重疊並重建切句與時間碼。不要直接把模型分段當成正式字幕分段。處理 ElevenLabs 輸入時完整讀取 [ElevenLabs 來源規格](references/elevenlabs-source.md)。

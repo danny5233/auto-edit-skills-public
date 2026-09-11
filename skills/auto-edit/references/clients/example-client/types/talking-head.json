@@ -1,0 +1,7 @@
+{
+  "client_id": "example-client",
+  "type_id": "talking-head",
+  "scope": "type",
+  "rules": [],
+  "external_refs": []
+}

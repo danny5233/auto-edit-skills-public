@@ -3,6 +3,10 @@ name: premiere-auto-rough-cut
 description: Create a non-destructive Premiere Pro rough-cut XML from Premiere XMEML, Jianying SRT, and matching audio, using the nearest workspace-specific client or series profile. Use for identifying invalid takes, retakes, director instructions, long silence, repetitions, and uncertain speech, then splitting and color-labeling clips without deleting content or changing duration. Do not use for subtitle-only delivery or destructive ripple editing.
 ---
 
+## 實拍剪輯架構轉接
+
+處理實拍剪輯案件或其中的字幕子工作時，先讀 [auto-edit 共用入口](../auto-edit/SKILL.md) 與 [相容性契約](../auto-edit/references/compatibility.md)，完成或沿用同案分類确认。分層儲存、案件身份與工具路由依該契約；下文的來源、人工鎖定及品質驗證保持有效。未接入的舊案件保留原 job/profile，不自動搬移或重跑。每次新增學習先判定通則／客戶／類型／單集的主要位置，再依原 learning-loop 驗證。
+
 # Premiere Auto Rough Cut
 
 Produce an importable Premiere XML that preserves every source moment while making editorial review faster. Keep the reusable engine client-neutral; load people, track roles, vocabulary, and editorial preferences only from the active workspace profile.

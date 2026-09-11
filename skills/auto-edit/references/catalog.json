@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "clients": {
+    "example-client": {
+      "name": "示例客戶",
+      "client": "references/clients/example-client/client.json",
+      "types": {
+        "talking-head": {
+          "name": "口播",
+          "path": "references/clients/example-client/types/talking-head.json"
+        }
+      }
+    }
+  }
+}

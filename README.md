@@ -7,7 +7,7 @@
 | subtitle-tools | 剪映 SRT 校正、切句、驗證與人工回填 | 維護中 |
 | make-custom-srt-subtitles | ElevenLabs JSON 轉繁中字幕及時間對齊 | 維護中；API 需自備金鑰與授權 |
 | premiere-auto-rough-cut | Premiere XML 非破壞性粗剪與標色 | 維護中 |
-| auto-edit | 系列剪輯與 B-roll 工作流程規格 | 草案，無執行引擎 |
+| auto-edit | 分類確認、分層與唯讀案件檢查 | 可用流程入口；無自動成片引擎 |
 | story-to-handdrawn-video | 手繪故事影片 Skill 與 wrapper | 需另備相容 renderer 專案，非獨立影片產生器 |
 
 ## 安裝
@@ -21,7 +21,7 @@ python3 scripts/install.py subtitle-tools
 ```
 
 安裝器在 `~/.codex/skills/` 建立指向本 checkout 的連結。既有不同內容不會被覆寫。
-其他 Skill 將最後的名稱換掉；不會一次啟用所有草案。重新開啟 Codex 任務後使用。
+其他 Skill 將最後的名稱換掉；只安裝所選入口與必要共用依賴。重新開啟 Codex 任務後使用。
 
 ## 更新與協作
 
@@ -41,3 +41,7 @@ python3 skills/subtitle-tools/scripts/test_revision_report.py
 python3 skills/make-custom-srt-subtitles/scripts/test_srt_style.py
 python3 skills/make-custom-srt-subtitles/scripts/test_transcribe_elevenlabs.py
 ```
+
+## 實拍剪輯架構
+
+`auto-edit` 現為可用的分類確認、分層與案件檢查入口，沒有自動成片引擎。舊粗剪／字幕入口安裝時一併安裝auto-edit。公開層級只有合成示例，客戶與案件資料須留私人來源。`case_context.py`只做唯讀檢查，不能證明使用者回答的真偽，不能取代Premiere匯入測試。

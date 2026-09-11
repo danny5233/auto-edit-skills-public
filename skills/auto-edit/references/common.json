@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "rules": [
+    {
+      "id": "C01",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "來源唯讀與同案白名單、具名根目錄、hash 版本；不跨集套用素材、時間碼或人物。"
+    },
+    {
+      "id": "C02",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "先用既有證據，ASR、畫面與原音合看；無實際回聽不宣稱聽過。"
+    },
+    {
+      "id": "C03",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "標色保留全長；不支援的 XML 結構拒絕猜測或平面化。"
+    },
+    {
+      "id": "C04",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "真實幀率、TC、速度與來源映射分開；新版主軸使舊配片依賴失效。"
+    },
+    {
+      "id": "C05",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "結構驗證、感知複核與 Premiere 匯入分開報告。"
+    },
+    {
+      "id": "C06",
+      "scope": "common",
+      "primary": "SKILL.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "新案先取得分類回答；最新人工來源與明確指示優先。"
+    },
+    {
+      "id": "C07",
+      "scope": "common",
+      "primary": "SKILL.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "Premiere Pro 2026、預設背景檔案作業。"
+    }
+  ]
+}
