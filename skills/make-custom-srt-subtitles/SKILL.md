@@ -7,6 +7,15 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 
 處理實拍剪輯案件或其中的字幕子工作時，先讀 [auto-edit 共用入口](../auto-edit/SKILL.md) 與 [相容性契約](../auto-edit/references/compatibility.md)，完成或沿用同案分類确认。分層儲存、案件身份與工具路由依該契約；下文的來源、人工鎖定及品質驗證保持有效。未接入的舊案件保留原 job/profile，不自動搬移或重跑。每次新增學習先判定通則／客戶／類型／單集的主要位置，再依原 learning-loop 驗證。
 
+## 沿用上游案件
+
+上一步 `auto-edit` 已確認客戶與類型時，直接接收同案資訊與選定的字幕 profile、格式及交付位置；**不再篩選客戶、不建立字幕端客戶索引、不重問已確認分類**。先讀 [上游案件交接](references/case-handoff.md)，以本集 `subtitle-context.json` 引用該 case。
+
+- 使用 `scripts/subtitle_context.py check <subtitle-context.json> --workspace <工作區>` 核對既有確認、来源與版本；辨識與驗證共用 `--workspace`／`--context`，不重新查詢分類 catalog。
+- 客戶、剪輯類型、集數與交付位置由上游提供；字幕端只保存 source_ids、decisions、單集證據與交付紀錄。新系列與候選學習放私人工作區，既有 profile 保持原主要位置。
+- 上游已提供 `subtitle_content_type` 就沿用；未提供則先用共用規則，不依秒數或方向猜測，只有影響本次處理的缺項才集中補充。沒有專屬 profile 時用通用規則，不借其他客戶設定。
+- 核對來源、profile、上游 case 與 decisions 的 pins；有變動先檢視差異、保留人工鎖定，再登記版本。未接入舊案保留原路徑與原指令，不搬移或重做。
+
 # 自動字幕製作
 
 以 ElevenLabs Scribe v2 原始 JSON 的逐字／逐字元文字、時間與講者資料建立辨識底稿，配合對應原音及同步分軌校字、判斷講者、處理多人重疊並重建切句與時間碼。不要直接把模型分段當成正式字幕分段。處理 ElevenLabs 輸入時完整讀取 [ElevenLabs 來源規格](references/elevenlabs-source.md)。
@@ -15,16 +24,16 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 
 呼叫 ElevenLabs 前先確認本次使用者允許上傳的音訊、處理範圍與費用。公開版不附帶任何人的永久授權。先執行 `--dry-run`，已獲得有效授權後才加 `--confirm-cost`；金鑰由使用者自己的環境或私人設定檔提供。
 
-收到人工修正版時，完整讀取並執行 [人工回填與持續學習制度](references/learning-loop.md)。使用 工作區的 `.subtitle-tools/learning-registry.json` 累積候選模式與衝突；不得只靠本聊天室上下文記憶已學會的規則。
+收到人工修正版時，完整讀取並執行 [人工回填與持續學習制度](references/learning-loop.md)。新案件使用工作區 `learning_registry`（預設 `.subtitles/learning-registry.json`）累積候選模式與衝突；舊工作區紀錄保留原位供歷史比對；不得只靠本聊天室上下文記憶已學會的規則。
 
 ## 系列聊天室與每集隔離
 
 - 採用「一個系列一個聊天室、一集一個獨立工作編號」作為預設制度。同系列集中在同一聊天室，以延續固定講者、常用詞、節目梗與已確認的字幕偏好；不同系列或客戶另開聊天室，避免系列規則互相污染。
 - 使用者也可以在新聊天室繼續同系列。聊天室不是系列知識的唯一來源；可沿用內容必須先寫入該系列的 `series-profile.json`，新聊天室讀取同一系列設定後再使用。
-- 每次偵測到「新任務／新一集／新影片」時，先確認系列名稱與集數或片名，建立新的 `job_id`、獨立工作目錄、`<job_id>_job.json` 與本集 `decisions.json`。不得沿用上一集的 `job_id`、工作目錄或本集鎖定。
-- 在 `<job_id>_job.json` 記錄 `series_id`、`episode_id`、本次明確收到的來源檔案白名單、檔案雜湊與版本。開始處理前，向使用者簡短確認「只使用本次新集素材，沿用已確認的系列知識」。
+- 每次偵測到「新任務／新一集／新影片」時，先沿用上游已確認的系列、集數或片名，僅補缺少的必要資訊，建立新的 `job_id`、獨立工作目錄、`<job_id>_job.json` 與本集 `decisions.json`。不得沿用上一集的 `job_id`、工作目錄或本集鎖定。
+- 在 `<job_id>_job.json` 記錄 `series_id`、`episode_id`、本次明確收到的來源檔案白名單、檔案雜湊與版本。開始處理前簡短告知「只使用本次新集素材，沿用已確認的系列知識」，不把這段告知變成第二次分類確認。
 - 只允許跨集沿用該系列已確認並寫入 `series-profile.json` 的固定講者與角色、專有名詞、常見誤辨識對照、固定用語、節目梗、錄音習慣及系列限定字幕偏好。
-- 系列設定由使用者提供工作區內的 JSON，透過 `--profile /absolute/path/to/profile.json` 指定；公開版不附客戶設定。沒有設定時使用通用預設。系列規則不得覆蓋使用者在本集提出的最新要求。
+- 新案件系列設定由上游案件指向使用者自己的 JSON；公開版不附客戶設定。未接入舊案仍可透過 `--profile /absolute/path/to/profile.json` 指定，未提供時使用通用預設。系列規則不得覆蓋使用者在本集提出的最新要求。
 - 絕對禁止跨集沿用上一集的音檔、影片、ElevenLabs 原始 JSON、舊 SRT、時間碼、音訊事件、講者時間表、`hidden_events`、`speaker_checks`、待確認清單、`decisions.json` 的 `exact` 鎖定、AI 基準稿、人工修正版或字幕成品。
 - 同一聊天室裡即使看得到舊附件或舊結論，也不得把它們視為本集輸入。只處理本集來源白名單內且已驗證版本相符的檔案；發現檔名、時長、雜湊或集數混淆時立即暫停並集中確認。
 - 系列知識只作用於同一 `series_id`。跨系列只能套用 Skill 中已確認的全域規則，不得把某節目的用語、人物或例外帶到另一節目。
@@ -55,7 +64,7 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 - 多人節目強烈建議保留每位講者的同步獨立音軌，或封裝成一人一聲道的多聲道檔案。多聲道 ElevenLabs JSON 用來建立每位講者的文字時間表，但不取代原始音軌複核。
 - 剪映、Premiere 或其他舊 SRT 可選擇性提供，只作差異比較與遺漏警示，不得覆蓋原音、人工鎖定或本次 ElevenLabs 原始資料。
 - 若要讓字幕切換配合最終畫面，另收與本集最終剪輯版完全相同的 Premiere Final Cut Pro XML。XML 只提供序列幀率與實際可見剪輯點，不能單獨證明詞彙的真實開口或文字應歸前後哪段。
-- 一併確認節目名稱、集數、輸出檔名、已知專有名詞及既有人工校正紀錄。
+- 沿用上游已確認的節目、集數、輸出位置與已知詞彙，讀取既有人工校正紀錄；只補本次缺少的必要資訊。
 - 為每次製作建立不重複的 `job_id`，格式優先採 `<節目>-<集數>-<YYYYMMDD-HHMM>`。所有交付稿、人工回填稿、`decisions.json` 與差異報告都沿用此編號。
 - 建立本集來源白名單，只列入使用者為本集明確提供且已驗證版本相符的檔案。即使同一聊天室或工作區保留上一集素材，也不得自動搜尋後加入本集。
 - 若存在該系列的 `series-profile.json`，只載入其中已確認的系列知識；不得從上一集 `decisions.json`、SRT 成品或待確認清單反向推定系列規則。
@@ -194,7 +203,7 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 
 ### 11. 全集驗收
 
-執行完整回歸檢查：
+已接入案件的驗證指令使用 `--workspace <工作區> --context <subtitle-context.json>`，取代另傳 `--profile`／`--decisions`；下列明確路徑寫法保留給未接入舊案。執行完整回歸檢查：
 
 ```bash
 python3 scripts/srt_style.py flatten <待驗證字幕.srt> <正式字幕.srt>
@@ -228,6 +237,8 @@ python3 scripts/revision_report.py \
 
 ### 12. 正式交付
 
+- 已接入的字幕案件直接沿用上游已確認的客戶當集 `delivery_dir`，寫檔前核對掛載與可寫性，在 context 登記正式字幕、人工校對稿、AI 基準與報告的角色及 hash，再執行 `subtitle_context.py delivery <subtitle-context.json> --workspace <工作區>`。位置變更依本次使用者指示更新上游，字幕端不另作覆蓋；檔案檢查不代替下列字幕品質要求。舊案維持原交付位置。
+
 - 交付完整 SRT、專有名詞與特殊判斷紀錄、仍無法百分之百確認的時間點清單，以及格式、時間軸、字數與閱讀速度檢查結果。
 - 如未完成分軌講者歸屬、全部講者警示處理或待確認回覆，不得把檔案命名或描述為「最終精校版」。
 - 同時保留 `<job_id>_AI基準.srt`，並將交給剪輯師修改的檔案命名為 `<job_id>_人工校對用.srt`。告知剪輯師只需修改後把同一工作編號的 SRT 傳回，不必重新說明整套規則。
@@ -240,7 +251,7 @@ python3 scripts/revision_report.py \
 - 人工修正立即成為本集權威：更新本集 `decisions.json`，能精確定位的文字與時間碼加入 `exact`，並重新驗證人工稿。除明顯格式錯誤外，不得在未說明的情況下把人工修改改回去。
 - 依 [人工回填與持續學習制度](references/learning-loop.md) 判定差異只屬本集、特定節目、全域候選、已確認全域規則或衝突。禁止一次人工修改直接污染所有節目。
 - 只有確認屬於同系列且可重複使用的詞彙、人物、梗、誤辨識對照或風格偏好，才能寫入 `series-profile.json`。不得把本集時間碼、逐句答案、事件層或來源檔案寫成系列規則。
-- 更新 工作區的 `.subtitle-tools/learning-registry.json` 的聚合次數、跨集數、校對者數、正反例與狀態；每個模式最多保留三個精簡證據，不把整份字幕塞進 Skill。
+- 更新工作區 `learning_registry` 的聚合次數、跨集數、校對者數、正反例與狀態；每個模式最多保留三個精簡證據，不把整份字幕塞進 Skill。
 - 低風險且達到升格門檻的機械規則可自動寫入程式、測試或風格規則。涉及語意取捨、講者、語氣詞、時間邊界或節目風格的高判斷規則，必須由內容負責人明確確認後才升格為全域規則。
 - 若不同剪輯師的修改互相衝突，建立 `conflict`，保留各自證據並集中詢問內容負責人；不得採最後上傳者覆蓋前者。
 - 每次規則升格都新增能重現原錯誤的回歸案例，重跑既有測試與歷史人工鎖定。新規則只要破壞既有確認案例，就撤回升格並保留為候選或節目例外。

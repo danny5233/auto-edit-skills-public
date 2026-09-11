@@ -30,7 +30,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--mode", choices=("single", "diarized", "multichannel"), required=True
     )
-    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--workspace", type=Path)
+    parser.add_argument("--context", type=Path, help="Subtitle context referencing the confirmed upstream case")
+    parser.add_argument("--bindings", type=Path)
     parser.add_argument("--profile", help="Series id, alias, file stem, or profile JSON path")
     parser.add_argument("--job-id")
     parser.add_argument("--env-file", type=Path)
@@ -242,16 +245,38 @@ def prepare_request(args: argparse.Namespace) -> dict[str, Any]:
     source = args.source.expanduser().resolve()
     if not source.is_file():
         raise ValueError(f"Source media does not exist: {source}")
-    profile = read_profile(args.profile)
+    context = None
+    if args.workspace:
+        from subtitle_context import resolve_context
+        if not args.context:
+            raise ValueError("--workspace requires --context")
+        context = resolve_context(args.workspace, args.context, args.bindings)
+        if args.profile:
+            raise ValueError("Use the upstream profile with --workspace; do not pass --profile")
+        profile = context["profile"]
+        matching = [s for s in context["sources"].values()
+                    if Path(s["resolved_path"]) == source and s["role"] in ("media", "audio")]
+        if len(matching) != 1:
+            raise ValueError("Transcription source is not this job's registered media/audio")
+        if args.job_id and args.job_id != context["job"]["job_id"]:
+            raise ValueError("--job-id conflicts with the upstream subtitle job")
+    else:
+        if args.context or args.bindings:
+            raise ValueError("--context and --bindings require --workspace")
+        if not args.output_dir:
+            raise ValueError("--output-dir is required without --workspace")
+        profile = read_profile(args.profile)
     keyterms = normalize_keyterms(profile_keyterms(profile) + list(args.keyterm))
     parameters = build_parameters(
         args.mode, args.language_code, args.num_speakers, keyterms
     )
     created_at = datetime.now(timezone.utc)
     job_id = safe_job_id(
-        args.job_id or f"{source.stem}-{created_at.strftime('%Y%m%d-%H%M%S')}"
+        (context["job"]["job_id"] if context else args.job_id) or f"{source.stem}-{created_at.strftime('%Y%m%d-%H%M%S')}"
     )
-    output_dir = args.output_dir.expanduser().resolve()
+    output_dir = args.output_dir.expanduser().resolve() if args.output_dir else context["evidence_dir"]
+    if context and (output_dir != context["evidence_dir"] or job_id != context["job"]["job_id"]):
+        raise ValueError("Output directory/job ID conflicts with the upstream subtitle job")
     raw_path = output_dir / f"{job_id}_elevenlabs_raw.json"
     metadata_path = output_dir / f"{job_id}_elevenlabs_request.json"
     warnings = ["This request can incur ElevenLabs transcription charges."]
@@ -263,6 +288,7 @@ def prepare_request(args: argparse.Namespace) -> dict[str, Any]:
         "source": source,
         "source_sha256": sha256_file(source),
         "profile": profile,
+        "subtitle_context": context,
         "parameters": parameters,
         "job_id": job_id,
         "created_at": created_at,
@@ -290,7 +316,16 @@ def public_request_summary(request: dict[str, Any]) -> dict[str, Any]:
         "raw_path": str(request["raw_path"]),
         "metadata_path": str(request["metadata_path"]),
         "warnings": request["warnings"],
+        "subtitle_context": handoff_metadata(request),
     }
+
+
+def handoff_metadata(request):
+    context = request.get("subtitle_context")
+    if context is None:
+        return None
+    from subtitle_context import summary
+    return summary(context)
 
 
 def run(
@@ -339,6 +374,7 @@ def run(
         "api_key_source": key_source,
         "response_sha256": sha256_json(raw),
         "processing_seconds": round(elapsed, 3),
+        "subtitle_context": handoff_metadata(request),
     }
     write_json_exclusive(raw_path, raw)
     write_json_exclusive(metadata_path, metadata)

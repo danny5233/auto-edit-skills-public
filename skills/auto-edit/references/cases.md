@@ -20,3 +20,11 @@
 bindings 是每台裝置私有 JSON，例如 `{"media": "/mounted/media-root"}`；不進公開或私人知識倉庫。工作目錄用 `--workspace` 明確指定。Windows 可傳 `{"media":"D:\\Media"}`，路徑解析由該平台 Python 處理；XML 內 file URL 重新連結須在新輸出副本進行，這個檢查器不修改 XML。不要對原文全域字串取代。
 
 GitHub 同步規則與精簡案件索引，**不會同步素材或字幕交付**。另台裝置需使用者媒體儲存及同版案件資料；缺檔只能閱讀知識與接續說明。私人 `references/case-index/` 只保存已審查的簡要狀態、相對證據位置與 hash，不存原字幕或影音。
+
+## 字幕子工作交接
+
+同案分類已確認後，`make-custom-srt-subtitles` 直接沿用本 case 的 client_id、type_id、episode_id 與原 classification.confirmation，不再分類或詢問一次。既有授權包含字幕時在 scope.stages 記錄 text。
+
+上游按已載入類型層與實際作用域選定字幕 profile，將本案結果寫在 `subtitle` 擴充：job_id、可選 series_id、可選 subtitle_content_type、profile 的 root/path/sha256（無專屬設定為 null）、learning_registry 及已確認的 delivery.directory。不是新增客戶目錄；現有 profile 繼續 primary，未確定短／長格式時不按片長或方向推測。交接檢查只核對原資料，不重跑 catalog 選擇。
+
+字幕端另存本集 context，以 upstream_case 的 root/path/sha256 引用此檔，來源只引用本 case 的 source_ids，並保存 decisions、evidence_dir 與交付 hash。詳細格式與命令見 [字幕交接規格](../../make-custom-srt-subtitles/references/case-handoff.md)。原 job 與人工鎖定留原位；case 管理版號與來源剪輯版本分開。

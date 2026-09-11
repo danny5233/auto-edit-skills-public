@@ -324,15 +324,15 @@ def load_decisions(path: Path | None) -> dict[str, object]:
     return data
 
 
-def load_style_policy(profile_path: Path | None) -> dict[str, object]:
+def load_style_policy(profile_path: Path | None, profile_data: dict | None = None) -> dict[str, object]:
     policy: dict[str, object] = {
         "scope": "global",
         "series_id": None,
         "tail_fill_threshold_ms": GLOBAL_TAIL_FILL_THRESHOLD_MS,
     }
-    if profile_path is None:
+    if profile_path is None and profile_data is None:
         return policy
-    data = json.loads(profile_path.read_text(encoding="utf-8"))
+    data = profile_data if profile_data is not None else json.loads(profile_path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError("series profile JSON must be an object")
     preferences = data.get("subtitle_preferences", {})
@@ -358,11 +358,12 @@ def validate(
     as_json: bool,
     decisions_path: Path | None,
     profile_path: Path | None,
+    *, profile_data: dict | None = None,
 ) -> int:
     cues = parse_srt(path)
     issues: list[dict[str, object]] = []
     decisions = load_decisions(decisions_path)
-    style_policy = load_style_policy(profile_path)
+    style_policy = load_style_policy(profile_path, profile_data)
     tail_fill_threshold_ms = int(style_policy["tail_fill_threshold_ms"])
     allowed_terms = [
         str(term) for term in decisions.get("allowed_official_terms", [])
@@ -2771,6 +2772,9 @@ def main() -> int:
     validate_parser.add_argument("--json", action="store_true")
     validate_parser.add_argument("--decisions", type=Path)
     validate_parser.add_argument("--profile", type=Path)
+    validate_parser.add_argument("--workspace", type=Path)
+    validate_parser.add_argument("--context", type=Path)
+    validate_parser.add_argument("--bindings", type=Path)
 
     args = parser.parse_args()
     try:
@@ -2778,6 +2782,27 @@ def main() -> int:
             return analyze(args.files, args.json)
         if args.command == "flatten":
             return flatten(args.input, args.output)
+        if args.workspace:
+            from subtitle_context import resolve_context
+            if not args.context:
+                raise ValueError("--workspace requires --context")
+            if args.profile or args.decisions:
+                raise ValueError("Use upstream profile and pinned decisions with --workspace")
+            context = resolve_context(args.workspace, args.context, args.bindings)
+            candidate = args.file.expanduser().resolve()
+            if not candidate.is_relative_to(context["evidence_dir"]):
+                from subtitle_context import inside, digest
+                registered = [row for row in context["job"].get("deliverables", [])
+                              if row.get("job_id") == context["job"]["job_id"]
+                              and row.get("role") in ("final_srt", "review_srt", "ai_baseline")
+                              and inside(context["delivery_dir"], row.get("path")) == candidate
+                              and row.get("sha256") == digest(candidate)]
+                if len(registered) != 1:
+                    raise ValueError("SRT is not in this job's evidence directory or pinned deliverables")
+            return validate(candidate, args.json, context["decisions_path"],
+                            context["profile_path"], profile_data=context["profile"])
+        if args.context or args.bindings:
+            raise ValueError("--context and --bindings require --workspace")
         return validate(args.file, args.json, args.decisions, args.profile)
     except (OSError, UnicodeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)

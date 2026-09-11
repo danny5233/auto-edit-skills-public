@@ -70,6 +70,16 @@
       ],
       "status": "confirmed",
       "summary": "Premiere Pro 2026、預設背景檔案作業。"
+    },
+    {
+      "id": "C08",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-workflow-contract"
+      ],
+      "status": "confirmed",
+      "summary": "交付前確認本客戶當集專案目的地與可寫性，核對實際檔案；不能回退工具暫存或其他案件。"
     }
   ]
 }

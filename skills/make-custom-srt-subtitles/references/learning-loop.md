@@ -13,6 +13,14 @@
 7. 回歸測試
 8. 回報格式
 
+## 工作區接入
+
+新增案件依 [上游案件交接](case-handoff.md) 接收已選定的客戶、類型、profile、學習紀錄與交付位置；不在字幕端再篩選客戶。context 只保存本集證據與 decisions。候選／衝突寫入 workspace `learning_registry`（預設 `.subtitles/learning-registry.json`）；不新增客戶資料到已安裝 Skill。既有 profile 與學習紀錄保留原 primary；已接入的系列仍回寫同一來源，不複製平行設定。新案件與既有歷史分別引用，不把同一人工證據重複計數。
+
+收到人工稿後先驗證本集來源與 pins。保留不可變 AI 基準及原人工檔，更新 decisions 前檢查所有既有 exact；完成回填才更新本案 decisions hash。profile 改動先核對作用域與差異，再更新本案 profile pin。通用規則的正式升格仍須原有門檻與回歸測試，並依 canonical Skill 更新流程發布。
+
+上游傳入的 `subtitle_content_type` 可區分同系列短／長字幕偏好，不能取代客戶剪輯類型或把系列規則自動升為客戶通用。以下舊路徑範例只適用未接入案件；已接入者以上游交接與本集 context 明確位置為準，原 job 不搬移。
+
 ## 1. 最少操作協議
 
 首次交付時：
