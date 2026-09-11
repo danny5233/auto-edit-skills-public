@@ -134,7 +134,7 @@ python3 scripts/revision_report.py \
 
 1. 驗證人工 SRT 可解析、編號連續、時間不重疊。
 2. 驗證每個字幕區塊恰好一行文字；若有實體換行，先以半形空格保留語句邊界後再驗證。
-3. 把人工確認寫入本集 `decisions.json` 並以 `exact` 保護。
+3. 把人工確認寫入本集 `decisions.json` 並以 `exact` 保護文字、start 與 end；不能只鎖起點。對應 XML 案件依 [切點審查落實](reviewed-cut-release.md) 保存人工稿與成品 SHA256，明確區分人工重放與獨立生成驗證。
 4. 重跑本集驗證，確認沒有把人工內容改回。
 
 每次全域升格還要：

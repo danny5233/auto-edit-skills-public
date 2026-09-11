@@ -129,10 +129,16 @@ def read_profile(profile_value: str | None) -> dict[str, Any] | None:
 def profile_keyterms(profile: dict[str, Any] | None) -> list[str]:
     if profile is None:
         return []
+    # A series dictionary can contain past guests/products. Only an explicit
+    # stable roster should bias a new recording when this field is present.
+    if "transcription_keyterms" in profile:
+        roster = profile["transcription_keyterms"]
+        if not isinstance(roster, list) or not all(isinstance(term, str) for term in roster):
+            raise ValueError("transcription_keyterms must be an array of strings")
+        return roster
     values: list[str] = [str(item) for item in profile.get("confirmed_terms", [])]
     misrecognitions = profile.get("common_misrecognitions", {})
     if isinstance(misrecognitions, dict):
-        values.extend(str(item) for item in misrecognitions.keys())
         values.extend(str(item) for item in misrecognitions.values())
     return values
 

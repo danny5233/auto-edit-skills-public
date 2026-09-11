@@ -803,6 +803,10 @@ def validate(
                 cue,
                 f"已確認字幕被改動 預期 {expected!r} 實際 {cue.visible_text!r}",
             )
+        if cue is not None and "end" in item:
+            expected_end = parse_timestamp(str(item["end"]))
+            if cue.end_ms != expected_end:
+                add("error", cue, f"已確認字幕結束時間被改動 預期 {item['end']} 實際 {format_timestamp(cue.end_ms)}")
     full_text = "\n".join(cue.visible_text for cue in cues)
     for term in decisions.get("forbid", []):
         if str(term) in full_text:

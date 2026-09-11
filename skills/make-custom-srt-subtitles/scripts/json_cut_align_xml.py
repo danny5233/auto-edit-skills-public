@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -740,6 +741,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             ),
         },
     }
+    report["delivery_grade"] = "candidate_only"
+    report["xml_cut_scope"] = "enabled_track_candidates_visibility_requires_review"
+    report["output_srt_sha256"] = hashlib.sha256(output_srt.encode("utf-8")).hexdigest()
+    report["summary"]["xml_track_cut_candidates"] = len(cuts)
     write_exclusive(args.output_srt.expanduser(), output_srt)
     write_exclusive(args.report.expanduser(), json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     if args.cards_output:

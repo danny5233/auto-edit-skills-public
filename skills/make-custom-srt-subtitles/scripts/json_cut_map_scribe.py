@@ -12,6 +12,7 @@ import argparse
 import difflib
 import hashlib
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -170,7 +171,27 @@ def source_characters(
     characters: list[dict[str, Any]] = []
     previous_start = -1.0
     previous_end = -1.0
-    for source_index, item in enumerate(words):
+    events = []
+    for source_index, word in enumerate(words):
+        if not isinstance(word, dict):
+            raise ValueError("Each Scribe word event must be an object")
+        if str(word.get("type", "word")).lower() in SKIPPED_TYPES:
+            continue
+        nested = word.get("characters")
+        if nested is not None:
+            if not isinstance(nested, list) or not nested or not all(isinstance(c, dict) for c in nested):
+                raise ValueError("Scribe characters must be a nonempty object array")
+            if compact("".join(str(c.get("text", "")) for c in nested)) != compact(str(word.get("text", ""))):
+                raise ValueError("Native characters do not reproduce their parent word")
+            for ordinal, character in enumerate(nested):
+                # Inherit speaker metadata, never inherit a missing child timestamp.
+                event = {key: word[key] for key in ("speaker_id", "channel_index", "logprob") if key in word}
+                event.update(character)
+                event["source_word_character_index"] = ordinal
+                events.append((source_index, event))
+        else:
+            events.append((source_index, word))
+    for source_index, item in events:
         if not isinstance(item, dict):
             raise ValueError("Each Scribe word event must be an object")
         event_type = str(item.get("type", "word")).lower()
@@ -187,6 +208,8 @@ def source_characters(
         if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
             raise ValueError(f"Visible Scribe character lacks timestamps: {visible!r}")
         start_value, end_value = float(start), float(end)
+        if not math.isfinite(start_value) or not math.isfinite(end_value) or start_value < 0:
+            raise ValueError("Scribe character timestamps must be finite and nonnegative")
         if end_value < start_value:
             raise ValueError(f"Scribe character has inverted timestamps: {visible!r}")
         if start_value + 0.001 < previous_start or end_value + 0.001 < previous_end:
@@ -198,7 +221,7 @@ def source_characters(
             "source_event_index": source_index,
             "source_character_index": len(characters),
         }
-        for key in ("speaker_id", "channel_index", "logprob"):
+        for key in ("speaker_id", "channel_index", "logprob", "source_word_character_index"):
             if key in item:
                 record[key] = item[key]
         if "channel_index" not in record and selected_channel is not None:

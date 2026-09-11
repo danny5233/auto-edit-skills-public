@@ -145,6 +145,8 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 
 ### 8. 以 Premiere XML 校正剪輯點
 
+完成切點候選後，依 [切點審查落實與人工回填](references/reviewed-cut-release.md) 將逐點判斷實際套用並驗證交付檔。人工回填也讀此文件；候選報告不能代替正式輸出。
+
 只有收到與音檔、影片及 ElevenLabs 來源完全同版的 Premiere XML 時才執行本階段：
 
 - 從 XML 取得序列實際幀率及最終合成畫面真正可見的剪輯點。被上層畫面完全遮住的底層片段邊界、停用軌、音訊切點、轉場內部邊界與非最終序列不列入。

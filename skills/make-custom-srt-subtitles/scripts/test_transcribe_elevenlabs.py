@@ -91,7 +91,7 @@ class TranscribeElevenLabsTests(unittest.TestCase):
         profile = {"confirmed_terms": ["Example Term"], "common_misrecognitions": {"錯別字": "正確字"}}
         keyterms = MODULE.normalize_keyterms(MODULE.profile_keyterms(profile))
         self.assertIn("Example Term", keyterms)
-        self.assertIn("錯別字", keyterms)
+        self.assertNotIn("錯別字", keyterms)
         self.assertIn("正確字", keyterms)
 
     def test_process_environment_key_has_highest_precedence(self) -> None:
