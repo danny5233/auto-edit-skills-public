@@ -1,4 +1,4 @@
-# 可共享的 Codex Skills
+# auto-edit-skills-public
 
 這裡提供通用原始碼與使用規則，不包含作者的客戶系列設定、個人 API 授權或實際案件素材。
 
@@ -15,8 +15,8 @@
 需要 Git 與 Python 3.10+。字幕影音處理可能另需 ffmpeg；ElevenLabs 呼叫需相應 SDK。
 
 ```bash
-git clone https://github.com/danny5233/personal-skills-public.git
-cd personal-skills-public
+git clone https://github.com/danny5233/auto-edit-skills-public.git
+cd auto-edit-skills-public
 python3 scripts/install.py subtitle-tools
 ```
 
