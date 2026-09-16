@@ -2,6 +2,16 @@
   "schema_version": 1,
   "rules": [
     {
+      "id": "C10",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-editorial-review"
+      ],
+      "status": "confirmed",
+      "summary": "腳本外內容不是刪除理由；先判斷資訊與主題貢獻，控時優先處理重複、停頓、贅詞、殘句與低價值延伸。"
+    },
+    {
       "id": "C01",
       "scope": "common",
       "primary": "references/workflow.md",
