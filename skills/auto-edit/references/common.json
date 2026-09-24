@@ -2,6 +2,16 @@
   "schema_version": 1,
   "rules": [
     {
+      "id": "C15",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-roughcut-chapter-method"
+      ],
+      "status": "confirmed",
+      "summary": "粗剪章節依實際談話與畫面分段；腳本僅供對照，無腳本則依主題命名。目標為上層影像軌的原生可編輯文字圖層；未驗證 XML 能力前不宣稱已交付。"
+    },
+    {
       "id": "C10",
       "scope": "common",
       "primary": "references/workflow.md",
