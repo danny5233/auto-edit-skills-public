@@ -9,7 +9,7 @@
         "generic-roughcut-chapter-method"
       ],
       "status": "confirmed",
-      "summary": "粗剪章節依實際談話與畫面分段；腳本僅供對照，無腳本則依主題命名。目標為上層影像軌的原生可編輯文字圖層；未驗證 XML 能力前不宣稱已交付。"
+      "summary": "粗剪章節依實際談話與畫面分段；腳本僅供對照，無腳本則依主題命名。獨立交付章節 SRT，與對話字幕分離，並標明是 caption 軌。"
     },
     {
       "id": "C10",
