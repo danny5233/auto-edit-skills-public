@@ -92,6 +92,7 @@ def release(srt: Path, xml: Path, review: Path, output: Path, report: Path,
     if not decision.get("reviewer") or not decision.get("evidence"):
         raise ValueError("Review requires a named reviewer and evidence")
     cues, master, positions = checked(srt)
+    source_cue_intervals = [(cue.start, cue.end) for cue in cues]
     fps, cuts, name = parse_visible_cuts(xml, sequence_name)
     before = cut_ledger(cues, cuts, fps)
     mode = decision.get("mode")
@@ -114,6 +115,25 @@ def release(srt: Path, xml: Path, review: Path, output: Path, report: Path,
     elif mode == "reviewed_boundaries":
         if alignment is None or decision.get("alignment_sha256") != sha(alignment):
             raise ValueError("Missing or stale alignment")
+        if decision.get('audio_review_sha256'):
+            evidence_path = review.parent / 'audio_review' / 'audio_review.json'
+            if not evidence_path.is_file() or sha(evidence_path) != decision['audio_review_sha256']:
+                raise ValueError('Missing or stale cut audio review evidence')
+            evidence = json.loads(evidence_path.read_text(encoding='utf-8'))
+            if (evidence.get('xml_sha256') != sha(xml)
+                    or evidence.get('input_srt_sha256') != sha(srt)
+                    or evidence.get('alignment_sha256') != sha(alignment)
+                    or evidence.get('audio_sha256') != decision.get('audio_sha256')):
+                raise ValueError('Cut audio review evidence refers to different inputs')
+            if [cut.get('frame') for cut in evidence.get('cuts', [])] != [round(cut * fps) for cut in cuts]:
+                raise ValueError('Cut audio review evidence does not cover the XML cut ledger')
+            for audio_cut in evidence.get('cuts', []):
+                files = [(audio_cut['waveform'], audio_cut['waveform_sha256'])] + list(zip(
+                    audio_cut['channel_clips'], audio_cut['channel_clip_sha256']))
+                for filename, expected_sha in files:
+                    path = evidence_path.parent / filename
+                    if not path.is_file() or sha(path) != expected_sha:
+                        raise ValueError('Missing or stale cut audio review clip or waveform')
         chars, payload = alignment_characters(alignment, compact(master))
         spans, _ = protected_spans(compact(master), payload, decision.get("protected_terms", []))
         items = decision.get("cuts", [])
@@ -127,6 +147,13 @@ def release(srt: Path, xml: Path, review: Path, output: Path, report: Path,
                 raise ValueError("Each cut needs an explicit reason")
             action = item.get("action")
             if action in {"keep", "not_visible"}:
+                if (decision.get('cut_policy') == 'split_at_visible_edit'
+                        and action == 'keep'
+                        and any(start < item['frame'] / fps < end for start, end in source_cue_intervals)
+                        and not (item.get('visible_cut_confirmed') is True
+                                 and item.get('audio_conflict_confirmed') is True
+                                 and item.get('exception_reason'))):
+                    raise ValueError('Visible cut crossing a subtitle needs a reviewed split or documented audio conflict')
                 continue
             if action != "adopt":
                 raise ValueError("Unresolved cut decision")

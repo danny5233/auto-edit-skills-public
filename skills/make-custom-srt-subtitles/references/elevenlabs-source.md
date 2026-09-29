@@ -18,7 +18,7 @@ timestamps_granularity=character
 tag_audio_events=true
 ```
 
-先從系列 profile 的 `confirmed_terms`、人物、品牌與 `common_misrecognitions` 產生 keyterms。Keyterms 只提高辨識傾向，不得取代人工確認。
+每次送出前，先按已確認的客戶與影片類型載入偏好：客戶層 `transcription_keyterms` 放客戶／品牌正式名稱，系列層同欄位放自媒體／節目名稱及穩定反覆出現的專有名詞。本集已核實、但不宜跨集預載的人名或產品用 `--keyterm` 加入。兩層名單會合併、去重，並在 dry-run 與工作紀錄顯示實際送出的詞。`common_misrecognitions` 保存「常錯字串 → 正確拼法」以利校對；只把正確拼法放進 keyterms，不能把錯字送去誘導辨識。沒有明確名單的舊系列才沿用既有 `confirmed_terms` 相容規則。Keyterms 只提高辨識傾向，不得取代原音與人工確認。
 
 ## 隨附辨識工具
 

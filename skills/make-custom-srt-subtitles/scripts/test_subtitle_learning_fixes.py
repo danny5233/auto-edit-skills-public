@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from json_cut_map_scribe import source_characters
-from transcribe_elevenlabs import profile_keyterms
+from transcribe_elevenlabs import profile_keyterms, read_profile
 from srt_style import validate
 
 
@@ -43,6 +43,14 @@ class LearningGuardTests(unittest.TestCase):
     def test_episode_roster_can_exclude_past_guests(self):
         self.assertEqual(profile_keyterms({'confirmed_terms':['PastGuest'], 'transcription_keyterms':[]}),[])
         self.assertEqual(profile_keyterms({'transcription_keyterms':['Host']}),['Host'])
+
+    def test_client_and_series_keyterms_are_sent_as_correct_spellings(self):
+        profile = read_profile('shangmao-wenti-long-form')
+        terms = profile_keyterms(profile)
+        self.assertIn('尚懋生醫', terms)
+        self.assertIn('維琪百科', terms)
+        self.assertIn('我有問題', terms)
+        self.assertNotIn('圍棋百科', terms)
 
     def test_exact_end_cannot_drift_while_text_and_start_match(self):
         with tempfile.TemporaryDirectory() as tmp:

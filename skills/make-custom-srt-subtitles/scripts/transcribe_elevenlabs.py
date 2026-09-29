@@ -18,6 +18,7 @@ from typing import Any, Callable
 MODEL_ID = "scribe_v2"
 DEFAULT_LANGUAGE_CODE = "zho"
 PROFILE_DIRECTORY = Path(__file__).parent.parent / "references" / "series-profiles"
+CLIENT_DIRECTORY = Path(__file__).resolve().parents[2] / 'auto-edit' / 'references' / 'clients'
 UNSUPPORTED_KEYTERM_CHARACTERS = re.compile(r"[<>{}\[\]\\]")
 WINDOWS_INVALID_FILENAME_CHARACTERS = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
@@ -113,7 +114,7 @@ def read_profile(profile_value: str | None) -> dict[str, Any] | None:
         if not isinstance(data, dict):
             raise ValueError(f"Series profile must be a JSON object: {path}")
         if candidate.is_file():
-            return data
+            return attach_client_keyterms(data)
         names = {
             path.stem,
             str(data.get("series_id") or ""),
@@ -126,24 +127,43 @@ def read_profile(profile_value: str | None) -> dict[str, Any] | None:
         raise ValueError(f"No series profile matches: {profile_value}")
     if len(matches) > 1:
         raise ValueError(f"Multiple series profiles match: {profile_value}")
-    return matches[0]
+    return attach_client_keyterms(matches[0])
+
+
+def attach_client_keyterms(profile: dict[str, Any]) -> dict[str, Any]:
+    client_id = profile.get('client_id')
+    if not isinstance(client_id, str) or not re.fullmatch(r'[a-z0-9-]+', client_id):
+        return profile
+    client_file = CLIENT_DIRECTORY / client_id / 'client.json'
+    if not client_file.is_file():
+        return profile
+    client = json.loads(client_file.read_text(encoding='utf-8'))
+    if client.get('client_id') != client_id:
+        raise ValueError('Client vocabulary identity does not match series profile')
+    roster = client.get('transcription_keyterms', [])
+    if not isinstance(roster, list) or not all(isinstance(term, str) for term in roster):
+        raise ValueError('Client transcription_keyterms must be an array of strings')
+    return {**profile, '_client_transcription_keyterms': roster}
 
 
 def profile_keyterms(profile: dict[str, Any] | None) -> list[str]:
     if profile is None:
         return []
+    client_terms = profile.get('_client_transcription_keyterms', [])
+    if not isinstance(client_terms, list) or not all(isinstance(term, str) for term in client_terms):
+        raise ValueError('Client transcription_keyterms must be an array of strings')
     # A series dictionary can contain past guests/products. Only an explicit
     # stable roster should bias a new recording when this field is present.
     if "transcription_keyterms" in profile:
         roster = profile["transcription_keyterms"]
         if not isinstance(roster, list) or not all(isinstance(term, str) for term in roster):
             raise ValueError("transcription_keyterms must be an array of strings")
-        return roster
+        return client_terms + roster
     values: list[str] = [str(item) for item in profile.get("confirmed_terms", [])]
     misrecognitions = profile.get("common_misrecognitions", {})
     if isinstance(misrecognitions, dict):
         values.extend(str(item) for item in misrecognitions.values())
-    return values
+    return client_terms + values
 
 
 def normalize_keyterms(values: list[str]) -> list[str]:

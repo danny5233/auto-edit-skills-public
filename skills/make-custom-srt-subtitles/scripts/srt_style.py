@@ -40,8 +40,8 @@ STANDALONE_FILLER = re.compile(
     re.IGNORECASE,
 )
 ATTACHED_FILLER = re.compile(
-    r"^(?:嗯+|恩+|呃+|額+|喔+|哦+|欸+|哎+)(?=.)|"
-    r"(?<=.)(?:嗯+|恩+|喔+|哦+|欸+|哎+)$",
+    r"^(?:嗯+|恩+|呃+|額+|啊+|喔+|哦+|欸+|哎+)(?=.)|"
+    r"(?<=.)(?:嗯+|恩+|啊+|喔+|哦+|欸+|哎+)$",
     re.IGNORECASE,
 )
 GLUED_REACTION = re.compile(
@@ -709,12 +709,9 @@ def validate(
             elif stripped_text != "哈哈哈哈":
                 add("warning", cue, "持續 2 秒以上的獨立笑聲建議統一為 哈哈哈哈")
         elif STANDALONE_FILLER.fullmatch(stripped_text):
-            if cue.duration_s < 1:
-                add("error", cue, "未滿 1 秒的獨立填充音通常不應上字幕")
-            else:
-                add("warning", cue, "獨立反應達 1 秒可保留 請回聽確認實際發聲長度與反應作用")
+            add("warning", cue, "獨立短反應可上字幕 請依原音與對話功能確認 不以 1 秒門檻刪除")
         elif ATTACHED_FILLER.search(stripped_text):
-            add("warning", cue, "句首或句尾有反應詞 請回聽其本身是否拉長約 1 秒 不可依文字位置直接刪除")
+            add("warning", cue, "句首或句尾有反應詞 請依原音判斷是否為無作用填充 不可只看位置或長度刪除")
         if GLUED_REACTION.search(stripped_text):
             add("warning", cue, "可能有兩個話語單位被黏合 請回聽並以半形空格保留邊界")
         if MIXED_SPACING.search(cue.visible_text):

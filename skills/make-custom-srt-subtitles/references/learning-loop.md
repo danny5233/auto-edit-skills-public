@@ -19,6 +19,8 @@
 
 收到人工稿後先驗證本集來源與 pins。保留不可變 AI 基準及原人工檔，更新 decisions 前檢查所有既有 exact；完成回填才更新本案 decisions hash。profile 改動先核對作用域與差異，再更新本案 profile pin。通用規則的正式升格仍須原有門檻與回歸測試，並依 canonical Skill 更新流程發布。
 
+每次校完字幕，特別核對 ElevenLabs 對客戶名、自媒體名、節目名與本集反覆出現專有名詞的錯字。把原始誤辨識、確認後正字、原音／人工證據、所屬客戶或系列及出現集數記入回填紀錄；本集立即修正。若是跨影片類型都穩定的客戶名稱，將正字加入客戶層 `transcription_keyterms`；若只屬特定系列且下集仍可能出現，加入該系列的 `transcription_keyterms`。具體誤字映射留在 `common_misrecognitions` 供校對，不把錯字當作 ElevenLabs keyterm。只出現一集的來賓、產品或未確認名稱先留本集或待審，不預載到後續各集。更新偏好後，下次辨識先 dry-run 核對實際 keyterms 和 profile pin，再送出。
+
 上游傳入的 `subtitle_content_type` 可區分同系列短／長字幕偏好，不能取代客戶剪輯類型或把系列規則自動升為客戶通用。以下舊路徑範例只適用未接入案件；已接入者以上游交接與本集 context 明確位置為準，原 job 不搬移。
 
 ## 1. 最少操作協議

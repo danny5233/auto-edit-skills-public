@@ -2,6 +2,8 @@ import copy
 import json
 import tempfile
 import unittest
+import wave
+from array import array
 from pathlib import Path
 
 from json_cut_align_xml import Cue, parse_visible_cuts, xml_rate
@@ -31,7 +33,53 @@ class PipelineTests(unittest.TestCase):
         review = json.loads((self.root/'prepared/review.json').read_text())
         self.assertEqual(len(review['cuts']), 2)
         self.assertTrue(all(x['action']=='pending' for x in review['cuts']))
+        self.assertEqual(review['cut_policy'], 'split_at_visible_edit')
+        self.assertTrue(review['cuts'][0]['subtitle_spans_cut'])
+        self.assertEqual(review['cuts'][0]['expected_action'], 'adopt')
         self.assertEqual(result['status'], 'review-required')
+
+    def test_visible_cut_crossing_speech_needs_split_or_documented_conflict(self):
+        self.review['cut_policy'] = 'split_at_visible_edit'
+        self.review['cuts'][0].update(action='keep', reason='reviewed', visible_cut_confirmed=True)
+        with self.assertRaisesRegex(ValueError, 'reviewed split'):
+            self.run_release()
+        self.review['cuts'][0].update(audio_conflict_confirmed=True,
+                                      exception_reason='Original speech overlaps the cut within one indivisible word')
+        self.run_release()
+
+    def test_prepare_with_sequence_audio_writes_per_channel_review_bundle(self):
+        audio = self.root/'sequence.wav'
+        samples = array('h')
+        for index in range(3 * 8000):
+            samples.extend((9000 if 7500 <= index < 8500 else 0,
+                            12000 if 15500 <= index < 16500 else 0,
+                            3000 if 7500 <= index < 8500 else 0))
+        with wave.open(str(audio), 'wb') as writer:
+            writer.setnchannels(3); writer.setsampwidth(2); writer.setframerate(8000)
+            writer.writeframes(samples.tobytes())
+        result = prepare(self.srt, self.alignment, self.xml, self.root/'prepared', audio=audio)
+        folder = self.root/'prepared/audio_review'
+        evidence = json.loads((folder/'audio_review.json').read_text(encoding='utf-8'))
+        review = json.loads((self.root/'prepared/review.json').read_text(encoding='utf-8'))
+        self.assertEqual(result['audio_review_status'], 'listening_pending')
+        self.assertEqual(len(evidence['cuts']), 2)
+        self.assertEqual(evidence['channels'], 3)
+        self.assertEqual([item['frame'] for item in evidence['cuts']], [30, 60])
+        self.assertTrue(all(item['review_status'] == 'pending' for item in evidence['cuts']))
+        self.assertEqual(len(evidence['cuts'][0]['channel_clips']), 3)
+        self.assertGreater(evidence['cuts'][0]['channel_peak_rms'][0], evidence['cuts'][0]['channel_peak_rms'][2])
+        self.assertIn('audio_review_sha256', review)
+        self.assertIn('聲道 3', (folder/'index.html').read_text(encoding='utf-8'))
+        self.assertIn('stroke="#f97316"', (folder/'cut_0000030.svg').read_text(encoding='utf-8'))
+
+    def test_audio_review_requires_sequence_length(self):
+        audio = self.root/'short.wav'
+        with wave.open(str(audio), 'wb') as writer:
+            writer.setnchannels(1); writer.setsampwidth(2); writer.setframerate(8000)
+            writer.writeframes(b'\0\0' * 8000)
+        from xml_cut_audio_review import build
+        with self.assertRaisesRegex(ValueError, 'exceed audio duration'):
+            build(audio, self.xml, self.root/'too-short')
 
     def test_serialized_verifier_rejects_changed_final_and_false_ledger(self):
         self.run_release()

@@ -16,10 +16,11 @@
       "scope": "common",
       "primary": "references/workflow.md",
       "sources": [
-        "generic-process-context-and-purpose-check"
+        "generic-process-context-and-purpose-check",
+        "user-confirmed-srt-confirmation-purpose"
       ],
       "status": "confirmed",
-      "summary": "接續或交辦前核對已確認階段、輸入、處理方式、標記載體與交付物；語音短詞不單獨改寫流程。交付須驗實際用途與呈現，不只驗檔案格式。"
+      "summary": "接續或交辦前核對階段、輸入、載體與交付物；SRT 用於字幕，不充當建議或待確認清單。真正未解的字幕問題先查證，再附人工時間軸與上下文於對話確認；交付須驗實際用途。"
     },
     {
       "id": "C15",

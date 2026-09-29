@@ -15,7 +15,7 @@
 - `protected_terms`：本次受保護詞。
 - `cuts`：每個 XML 軌道候選恰好一筆；不可漏列或重複。
 
-每筆包含 `frame`、`action`、`reason`。`action` 可以是 `adopt`、`keep` 或 `not_visible`。`keep` 的理由描述實際語意／聲音／序列邊界原因；`not_visible` 記錄合成遮蔽證據，不能由沒有字幕命中反推不可見。
+每筆包含 `frame`、`action`、`reason`。`action` 可以是 `adopt`、`keep` 或 `not_visible`。所有剪輯專案共用 `cut_policy: split_at_visible_edit`：只要確認是畫面可見切點，且原字幕跨過該點，預設在切點換成下一段字幕；即使原本是一句話，也依原音找切點兩側的完整字詞，把全文分給前後兩段，例如十字句分成四字與六字。`keep` 只用於切點沒有跨字幕，或經回聽證實無法安全拆詞／會造成語音錯位；後者需 `visible_cut_confirmed: true`、`audio_conflict_confirmed: true` 與具體 `exception_reason`。`not_visible` 記錄合成遮蔽證據，不能由沒有字幕命中反推不可見。
 
 `adopt` 另外需要：
 
@@ -37,7 +37,7 @@ Scribe 區間蓋住剪輯點時，檢查 `semantic_review_candidate` 的前後�
 
 ## 系列知識與辨識提示分開
 
-`confirmed_terms` 可以保存以前確認過的品牌與來賓，但不代表每集都出現。若 profile 有 `transcription_keyterms`，只用這份穩定提示名單加本集明確的 `--keyterm`；空陣列表示不自動提示舊集詞彙。沒有此欄位的 profile 保持既有相容行為，但誤辨識對照只可加入正確值，不能把錯字鍵當成期待辨識詞。
+`confirmed_terms` 可以保存以前確認過的品牌與來賓，但不代表每集都出現。ElevenLabs 提示合併客戶層與系列層 `transcription_keyterms`，再加本集明確的 `--keyterm`；空陣列表示不自動提示舊集詞彙。沒有此欄位的 profile 保持既有相容行為，但誤辨識對照只可加入正確值，不能把錯字鍵當成期待辨識詞。每次校字的常錯例依 [人工回填與持續學習制度](learning-loop.md) 回填，下一集在送辨識前核對名單。
 
 人工稿拼法只鎖定本集，不把兩個不同品牌建立全系列互換，也不批次替換同稿中有不同人工選擇的同音字。省略填充音與自然短句屬語意判斷：保存本集結果與正反例，不使用「一律刪除所有語助詞」或固定提前若干幀。
 
@@ -46,10 +46,14 @@ Scribe 區間蓋住剪輯點時，檢查 `semantic_review_candidate` 的前後�
 收到同版 XML 時，校字與講者歸屬完成後先建立可靠字元映射，再執行：
 
 ```bash
-python3 scripts/xml_cut_pipeline.py prepare --srt master.srt --alignment mapping.json --xml timeline.xml --sequence-name main --output-dir cut-review-v1
+python3 scripts/xml_cut_pipeline.py prepare --srt master.srt --alignment mapping.json --xml timeline.xml --sequence-name main --audio sequence-aligned.wav --output-dir cut-review-v1
 ```
 
-這個入口會實際執行剪輯點候選產生器，保存原稿命中表、候選 SRT、逐點證據與完整 `review.json`。每個切點初始都是 `pending`，不能因候選工具成功便當作完成回聽。多講者不可選單一 ASR 聲道套全片；先完成每段主聲源歸屬，再提供同版映射。缺字元證據不得插值。
+這個入口會實際執行剪輯點候選產生器，保存原稿命中表、候選 SRT、逐點證據與完整 `review.json`。有與 XML 同版、從序列 0 秒起算的同步音訊時，加 `--audio`。工具在 `audio_review/index.html` 產生每個切點前後各 1 秒的分軌聲波與逐聲道可播放 WAV，橘線是 XML 切點；`audio_review.json` 記錄時間、影格、音訊／字幕／XML 雜湊及片段雜湊。16-bit PCM WAV 可直接處理；其他音訊格式需 FFmpeg 在 PATH，或指定 `--ffmpeg` 路徑。音訊長度短於 XML 切點時停止，不把不同步素材當證據。
+
+也可只做局部聲波審查：`python3 scripts/xml_cut_audio_review.py --audio sequence-aligned.wav --xml timeline.xml --output-dir local-audio-review --from-seconds 120 --to-seconds 190`。此用途不需要重新辨識或字元映射，適合先查看有疑慮的片段；正式產稿仍依上面的 `prepare`、逐點審查、`release`、`verify`。如果只有音訊和 XML，可先用此命令整理可聽證據，但不能據此推定字幕文字屬於切點哪一側。
+
+每個切點初始都是 `pending`。依分軌波形定位可能的開口、停頓、重疊與短插話，再逐軌回聽；結合校字稿和講者事件層確認真正講者、完整詞句及 hidden event。不能把最大聲的軌道直接當主講者，也不能從波形自動判定某個字、說話者或已完成回聽。回填採用項的 `audio_evidence` 時，註明片段檔、主聲道、回聽者與判斷；有聲波證據包的審查檔會在 `release` 時檢查證據雜湊及片段是否仍在。多講者不可選單一 ASR 聲道套全片；先完成每段主聲源歸屬，再提供同版映射。缺字元證據不得插值。
 
 逐點確認後執行 `xml_cut_pipeline.py release`，參數與 `reviewed_cut_release.py` 相同；正式產稿必須使用它的輸出。只將時間碼四捨五入到影格、只寫候選 JSON，或把 `xml_edit_checks` 留空，都沒有完成剪輯點對齊。
 
