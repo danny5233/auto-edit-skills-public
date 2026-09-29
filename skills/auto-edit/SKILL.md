@@ -15,6 +15,8 @@ description: 實拍影片剪輯與字幕工作的通用流程入口，處理分�
 
 讀 [案件契約](references/cases.md)，從assets/case.template.json建立新manifest。使用唯讀 `scripts/case_context.py inspect CASE.json`檢查中繼資料；有真實回答後再 `check CASE.json --workspace WORKSPACE --bindings BINDINGS.json`檢查來源hash。工具不證明回答真偽，也不執行剪輯。沒有editflow.py或通用一鍵精剪引擎。
 
+使用者交辦毛片歸檔時，先讀[通用歸檔規則（C17）](references/workflow.md#毛片歸檔c17)；其搬移授權不延伸到剪輯、字幕及 XML 修訂。
+
 實際工作與舊工具的路由見 [相容性](references/compatibility.md)，人工學習讀 [回填規格](references/learning.md)。每條規則有來源、scope、primary及狀態，候選不冒充永久偏好。編輯旁白不當ASR逐字稿；使用者特定格式不能被一般去標點工具靜默刪除。
 
 使用前fetch此公開倉庫，乾淨工作樹只fast-forward，保留自行修改。個人API授權、客戶資料和素材留私人位置；完成修改後驗證及正常提交同步，不強推。安裝auto-edit也須安裝所需的粗剪或字幕skill；若單獨安裝旧入口，本依賴需一併安裝。程式定位使用已安裝連結的真實位置；Python3.10+，媒體依賴另按專責skill準備。Premiere Pro 2026實機匯入與結構檢查分開記錄。

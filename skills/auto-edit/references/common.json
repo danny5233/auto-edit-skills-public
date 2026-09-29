@@ -2,6 +2,16 @@
   "schema_version": 1,
   "rules": [
     {
+      "id": "C17",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "user-confirmed-global-footage-archive"
+      ],
+      "status": "confirmed",
+      "summary": "交辦的毛片歸檔依實際媒體時間與內容證據判歸屬；確定對應後可直接搬移並保留來源→目的、驗證與恢復紀錄。僅限歸檔，不取消其他工作的來源保存與備份。"
+    },
+    {
       "id": "C16",
       "scope": "common",
       "primary": "references/workflow.md",
