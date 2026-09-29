@@ -15,6 +15,8 @@ description: 實拍影片剪輯與字幕工作的通用流程入口，處理分�
 
 讀 [案件契約](references/cases.md)，從assets/case.template.json建立新manifest。使用唯讀 `scripts/case_context.py inspect CASE.json`檢查中繼資料；有真實回答後再 `check CASE.json --workspace WORKSPACE --bindings BINDINGS.json`檢查來源hash。工具不證明回答真偽，也不執行剪輯。沒有editflow.py或通用一鍵精剪引擎。
 
+案件進度分開記錄：歸檔、同步與 XML 交接等前置作業依實際作業證據更新；粗剪、Acopy、Bcopy、Final 與人工結案只依案件授權、實際產物和人工確認。`scope.stages` 僅是授權；`delivery` 可能指前置交接，不自動代表成片 Final。未進入正式製作時不換算影片百分比；前置完成不等於粗剪開始。
+
 使用者交辦毛片歸檔時，先讀[通用歸檔規則（C17）](references/workflow.md#毛片歸檔c17)；其搬移授權不延伸到剪輯、字幕及 XML 修訂。
 
 實際工作與舊工具的路由見 [相容性](references/compatibility.md)，人工學習讀 [回填規格](references/learning.md)。每條規則有來源、scope、primary及狀態，候選不冒充永久偏好。編輯旁白不當ASR逐字稿；使用者特定格式不能被一般去標點工具靜默刪除。
