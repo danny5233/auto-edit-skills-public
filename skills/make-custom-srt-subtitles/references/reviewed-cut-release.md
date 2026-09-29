@@ -4,6 +4,18 @@
 
 `json_cut_align_xml.py` 是候選產生器。即使使用舊有 `--post-snap-audio-check passed`，其輸出仍不取代逐點審查，也不能直接稱正式成品。採用與拒絕都要完成判斷；不得把所有未決候選清空成 `xml_edit_checks: []` 後以格式通過交付。
 
+## 批次差異預覽（預設先做）
+
+先提供同版 SRT、字元映射、XML，以及已核對合成畫面可見切點的 `visible.json`：`{"frames":[...],"evidence":"核對依據"}`。XML 只會提出啟用軌道候選，不能自行把每個候選當作可見畫面；不可見或未證實者不自動改字幕。已人工定案的 cue 以 `--locked-cue`（原稿 1 起算序號，可重複）保護。
+
+```bash
+python3 scripts/batch_xml_cuts.py --srt master.srt --alignment mapping.json --xml timeline.xml --sequence-name main --visible-frames visible.json --output-dir batch-preview-v1
+```
+
+工具只在可見切點**實際跨越一段字幕**時改動。可靠字元在切點兩側且邊界安全，重新分配原文並精確於該幀換段；全部在前側就收尾，全部在後側就整段移到切點後合適的首字起點。已有字幕邊界與沒有字幕的空白不製造新段。一般起點取第一個保留字可靠開口減精確 3 幀；可見切點優先。無可靠字元時間、詞中切點、人工鎖定或時間衝突都列例外，不插值、不猜字、不改已確認字幕。
+
+`preview.srt` 與 `preview.json` 是差異預覽，不是正式成品。報告記錄輸入／輸出雜湊、精確幀率、耗時、自動拆句、整段移動、前三幀調整與例外。先檢查所有例外及語意／講者／hidden event 風險；需要原音時只對例外製作局部聲波與短原音。預覽重跑同一輸入應保持 SRT 位元組一致。正式交付仍依下方 `reviewed_cut_release.py` 與 `verify` 的契約，不能將預覽的自動判斷冒填為逐點回聽或人工簽核。
+
 ## 正式套用
 
 用 `reviewed_cut_release.py --srt master.srt --xml timeline.xml --sequence-name main --alignment mapping.json --review review.json --output final.srt --report release.json` 套用已完成的逐點判斷。`master.srt` 必須是已校字的同版底稿。
