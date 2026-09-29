@@ -2,11 +2,11 @@
 
 ## 1. Isolate the job
 
-Inventory only the folder supplied for the current job. Record absolute paths, sizes, and hashes for the source XML, Jianying SRT, and audio files. Create a unique job directory under the current workspace for analysis files and decisions. Do not reuse analysis output from another episode.
+Inventory only the folder supplied for the current job. Record absolute paths, sizes, hashes, and actual origin for the source XML, same-version timed text, and aligned audio evidence. Create a unique job directory under the current workspace for analysis files and decisions. Do not reuse analysis output from another episode.
 
-Required inputs are a Premiere-exported XMEML/XML, matching Jianying SRT, and matching audio. One full mix is sufficient for a single-protagonist job. Speaker stems are optional evidence, not a universal requirement.
+Semantic rough-cut decisions require a Premiere-exported XMEML/XML, same-version timed text, and aligned audio. `srt_analyzer.py` needs a parseable SRT as its coarse text index, but the SRT need not come from Jianying. Use an already verified same-version SRT when available. If the existing same-version source is ElevenLabs JSON, use `make-custom-srt-subtitles` to produce the parseable index and record origin=elevenlabs. Other timed-text formats need a verified conversion with source and time mapping before this analyzer; if no supported conversion exists, pause semantic labeling rather than passing them as SRT. Check the subtitle tool’s existing API and cost authorization before any new transcription; without authorization, do not call the API or ask the user to export a Jianying SRT. One full mix is sufficient for a single-protagonist job, and aligned audio may be extracted from the current job’s sound-bearing media. Independent speaker stems are optional evidence, not a universal requirement.
 
-If more than one plausible XML, SRT, or audio version exists and matching cannot be proven, stop and ask which version is authoritative.
+If the timed text or aligned audio cannot yet be verified, continue read-only XML structure and media-reference checks but do not make semantic red/yellow decisions. If more than one plausible XML, text, or audio version exists and matching cannot be proven, stop and ask which version is authoritative.
 
 ## 2. Inspect the Premiere XML before judging content
 
@@ -22,9 +22,9 @@ Determine and record:
 
 Select split tracks from the actual XML plus the active profile. Background music and unrelated overlays normally remain untouched. If a selected track contains transitions, unsupported retiming, collapsed one-frame subframe audio, unresolved references, or another structure that the splitter rejects, do not guess or flatten it.
 
-## 3. Verify SRT and audio synchronization
+## 3. Verify timed text and audio synchronization
 
-Strictly parse the SRT. Use it as a text and coarse-time index, not word-accurate truth. Run `srt_analyzer.py` to find candidates, then review their semantics in context.
+Strictly parse the same-version SRT index and record its actual source. Use it as a text and coarse-time index, not word-accurate truth. Run `srt_analyzer.py` to find candidates, then review their semantics in context; a transcript or JSON is not silently accepted as an SRT by this helper.
 
 Compare recognizable waveform or speech landmarks near the beginning, middle, and end. Estimate a fixed offset only when evidence supports it; check drift separately. Map SRT time into sequence time before frame quantization.
 

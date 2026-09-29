@@ -2,7 +2,7 @@
 
 實拍剪輯或其字幕子工作先讀auto-edit及workflow並確認「影片剪輯 → 客戶 → 類型」。同案子階段沿用回答，不複製別案確認。
 
-- premiere-auto-rough-cut：保留只切割標色、不刪除或ripple的契約。原路線要求剪映SRT；使用者明確授權的其他同版字幕來源須記實際origin，不冒稱剪映。nearest profile只提供候選，必須核對確認的客戶與類型。
+- premiere-auto-rough-cut：保留只切割標色、不刪除或 ripple 的契約。需要 XML、同版可追溯的時間化文字與對齊音訊；`srt_analyzer.py` 使用可解析 SRT 作文字索引，來源不必是剪映。已有同版文字時記實際 origin；沒有時先依所選字幕工具的既有授權與費用流程處理，不自行發明轉寫授權或要求剪映匯出。缺少可驗證的文字／音訊證據時先做唯讀 XML 結構檢查，暫停語意標色。音訊可從同案含聲媒體取得並驗證對齊，不普遍要求獨立音檔。nearest profile 仍須核對客戶與類型。
 - subtitle-tools：保留必要剪映SRT與同版影音要求；缺少不從零ASR。
 - make-custom-srt-subtitles：保留ElevenLabs原始JSON與同版影音、成本確認、講者與詞級驗證；不因整合取消dry-run或授權。
 - 舊job/profile/decisions保留原位置，以ID引用其primary，進行中案件不搬移或重跑。類型是剪輯分類；short_form/long_form是另一个字幕維度，不能按秒數猜。
