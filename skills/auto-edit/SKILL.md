@@ -11,6 +11,8 @@ description: 實拍影片剪輯與字幕工作的通用流程入口，處理分�
 
 依序讀本入口、workflow、catalog指定的客戶與同客戶類型，再讀案件與來源。未知客戶／類型先提出新分類。公開catalog只有合成示例，實際客戶規則及案件必須放使用者的私人維護來源，不提交到這個公開repo。
 
+新案件先確認專案／系列與影片類型，再載入已確認的同案偏好。若沒有相符的專案 profile，請使用者選擇只用通則，或明確指定一份既有偏好作風格參考；參考不得帶入別案的講者、詞彙、素材、時間碼及單集決定。同案身份已確認則沿用，不重問。
+
 讀 [案件契約](references/cases.md)，從assets/case.template.json建立新manifest。使用唯讀 `scripts/case_context.py inspect CASE.json`檢查中繼資料；有真實回答後再 `check CASE.json --workspace WORKSPACE --bindings BINDINGS.json`檢查來源hash。工具不證明回答真偽，也不執行剪輯。沒有editflow.py或通用一鍵精剪引擎。
 
 實際工作與舊工具的路由見 [相容性](references/compatibility.md)，人工學習讀 [回填規格](references/learning.md)。每條規則有來源、scope、primary及狀態，候選不冒充永久偏好。編輯旁白不當ASR逐字稿；使用者特定格式不能被一般去標點工具靜默刪除。

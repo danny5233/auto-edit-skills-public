@@ -9,11 +9,13 @@ description: Create, re-segment, correct, and validate Traditional Chinese SRT s
 
 ## 沿用上游案件
 
+先沿用 `auto-edit` 已確認的本案身份與相符字幕 profile。若無相符 profile，沿用上游已取得的「僅通則」或「指定既有偏好作風格參考」選擇；風格參考不帶入別案的講者、詞彙、素材、時間碼或人工鎖定，不因片名相似自行配對。
+
 上一步 `auto-edit` 已確認客戶與類型時，直接接收同案資訊與選定的字幕 profile、格式及交付位置；**不再篩選客戶、不建立字幕端客戶索引、不重問已確認分類**。先讀 [上游案件交接](references/case-handoff.md)，以本集 `subtitle-context.json` 引用該 case。
 
 - 使用 `scripts/subtitle_context.py check <subtitle-context.json> --workspace <工作區>` 核對既有確認、来源與版本；辨識與驗證共用 `--workspace`／`--context`，不重新查詢分類 catalog。
 - 客戶、剪輯類型、集數與交付位置由上游提供；字幕端只保存 source_ids、decisions、單集證據與交付紀錄。新系列與候選學習放私人工作區，既有 profile 保持原主要位置。
-- 上游已提供 `subtitle_content_type` 就沿用；未提供則先用共用規則，不依秒數或方向猜測，只有影響本次處理的缺項才集中補充。沒有專屬 profile 時用通用規則，不借其他客戶設定。
+- 上游已提供 `subtitle_content_type` 就沿用；未提供則先用共用規則，不依秒數或方向猜測，只有影響本次處理的缺項才集中補充。沒有相符 profile 時按使用者已確認的選擇使用通則，或只借指定 profile 的可移植風格，不借其案件身份與證據。
 - 核對來源、profile、上游 case 與 decisions 的 pins；有變動先檢視差異、保留人工鎖定，再登記版本。未接入舊案保留原路徑與原指令，不搬移或重做。
 
 # 自動字幕製作

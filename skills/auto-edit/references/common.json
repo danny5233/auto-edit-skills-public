@@ -2,6 +2,16 @@
   "schema_version": 1,
   "rules": [
     {
+      "id": "C16",
+      "scope": "common",
+      "primary": "references/workflow.md",
+      "sources": [
+        "generic-process-context-and-purpose-check"
+      ],
+      "status": "confirmed",
+      "summary": "接續或交辦前核對已確認階段、輸入、處理方式、標記載體與交付物；語音短詞不單獨改寫流程。交付須驗實際用途與呈現，不只驗檔案格式。"
+    },
+    {
       "id": "C15",
       "scope": "common",
       "primary": "references/workflow.md",
