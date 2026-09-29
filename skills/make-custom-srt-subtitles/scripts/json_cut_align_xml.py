@@ -10,6 +10,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -318,7 +319,7 @@ def descendants(element: ET.Element, name: str) -> list[ET.Element]:
     return [item for item in element.iter() if local_name(item) == name]
 
 
-def sequence_fps(sequence: ET.Element) -> float:
+def sequence_rate(sequence: ET.Element) -> Fraction:
     rate = direct(sequence, "rate")
     if rate is None:
         raise ValueError("Premiere XML sequence has no rate")
@@ -326,7 +327,20 @@ def sequence_fps(sequence: ET.Element) -> float:
     if timebase <= 0:
         raise ValueError("Premiere XML timebase must be positive")
     ntsc = direct_text(rate, "ntsc").upper() == "TRUE"
-    return timebase * 1000 / 1001 if ntsc else float(timebase)
+    return Fraction(timebase * 1000, 1001) if ntsc else Fraction(timebase)
+
+
+def sequence_fps(sequence: ET.Element) -> float:
+    return float(sequence_rate(sequence))
+
+
+def xml_rate(path: Path, sequence_name: str | None = None) -> Fraction:
+    sequences = descendants(ET.parse(path).getroot(), "sequence")
+    if sequence_name:
+        sequences = [s for s in sequences if direct_text(s, "name") == sequence_name]
+    if len(sequences) != 1:
+        raise ValueError("Premiere XML must resolve to exactly one sequence")
+    return sequence_rate(sequences[0])
 
 
 def parse_visible_cuts(path: Path, sequence_name: str | None) -> tuple[float, list[float], str]:

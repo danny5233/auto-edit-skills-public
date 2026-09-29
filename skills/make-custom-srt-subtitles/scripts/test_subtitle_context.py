@@ -276,6 +276,15 @@ class HandoffTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "registered media"):
             transcribe.run(args)
 
+    def test_xml_delivery_cannot_skip_cut_release(self):
+        self.test_delivery_requires_all_pinned_roles()
+        for row in self.local["deliverables"]:
+            (self.root / "media/Ai字幕" / row["path"]).write_text(row["role"])
+        context = self.resolve()
+        context["sources"]["timeline"] = {"role": "timeline", "resolved_path": str(self.root/"timeline.xml")}
+        with self.assertRaisesRegex(ValueError, "xml_cut_release"):
+            sc.check_delivery(context)
+
     def test_delivery_requires_all_pinned_roles(self):
         with self.assertRaises(ValueError):
             sc.check_delivery(self.resolve())

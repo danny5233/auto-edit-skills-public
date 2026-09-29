@@ -235,6 +235,14 @@ def check_delivery(context):
         require(digest(path) == row.get("sha256"), f"Delivery changed: {role}")
         paths.add(path)
         checked[role] = str(path)
+    timelines = [s for s in context["sources"].values()
+                 if s.get("role") == "timeline" and Path(s["resolved_path"]).suffix.lower() == ".xml"]
+    if timelines:
+        require(len(timelines) == 1, "Select exactly one current XML timeline for subtitle delivery")
+        require("xml_cut_release" in checked, "XML timeline requires xml_cut_release deliverable; run xml_cut_pipeline.py")
+        from reviewed_cut_release import validate_release
+        validate_release(Path(checked["final_srt"]), Path(timelines[0]["resolved_path"]),
+                         Path(checked["xml_cut_release"]))
     return checked
 
 

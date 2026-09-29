@@ -69,3 +69,5 @@ B-roll 覆蓋依當版主軸配置，不移動口播。檢查序列範圍、無�
 記錄 `structural`、`perceptual`、`premiere_import` 各自為 passed / partial / not_run / failed，附實際工具、範圍與證據。XML 能解析不等於內容、旋轉與資源都保留；結構通過不等於 Premiere 2026 匯入／播放通過。交付檔須與驗證檔 hash 一致，來源 hash 不變。沒有回聽、全片觀看、穩定器測試或 PR 匯入就明記未做。
 
 預設背景作業，不自行操作 Premiere UI。未完成項目保留可接續狀態；不將風格候選或交付結果稱作人工定案。
+
+字幕收到同版 Premiere XML 時，交接需包含當版 XML、校字稿、主聲源時間證據及剪輯點報告。依 `make-custom-srt-subtitles/references/reviewed-cut-release.md` 實際執行產稿與成品驗證；精確幀率、逐點採用／保留理由及輸出 hash 都需留存。只對齊影格網格不等於對齊畫面剪輯點；C2 字卡複製須接續已驗證的 C1，避免沿用對齊前的時間。

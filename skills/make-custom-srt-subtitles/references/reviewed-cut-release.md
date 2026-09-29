@@ -40,3 +40,27 @@ Scribe 區間蓋住剪輯點時，檢查 `semantic_review_candidate` 的前後�
 `confirmed_terms` 可以保存以前確認過的品牌與來賓，但不代表每集都出現。若 profile 有 `transcription_keyterms`，只用這份穩定提示名單加本集明確的 `--keyterm`；空陣列表示不自動提示舊集詞彙。沒有此欄位的 profile 保持既有相容行為，但誤辨識對照只可加入正確值，不能把錯字鍵當成期待辨識詞。
 
 人工稿拼法只鎖定本集，不把兩個不同品牌建立全系列互換，也不批次替換同稿中有不同人工選擇的同音字。省略填充音與自然短句屬語意判斷：保存本集結果與正反例，不使用「一律刪除所有語助詞」或固定提前若干幀。
+
+## 產稿必經入口與成品驗證
+
+收到同版 XML 時，校字與講者歸屬完成後先建立可靠字元映射，再執行：
+
+```bash
+python3 scripts/xml_cut_pipeline.py prepare --srt master.srt --alignment mapping.json --xml timeline.xml --sequence-name main --output-dir cut-review-v1
+```
+
+這個入口會實際執行剪輯點候選產生器，保存原稿命中表、候選 SRT、逐點證據與完整 `review.json`。每個切點初始都是 `pending`，不能因候選工具成功便當作完成回聽。多講者不可選單一 ASR 聲道套全片；先完成每段主聲源歸屬，再提供同版映射。缺字元證據不得插值。
+
+逐點確認後執行 `xml_cut_pipeline.py release`，參數與 `reviewed_cut_release.py` 相同；正式產稿必須使用它的輸出。只將時間碼四捨五入到影格、只寫候選 JSON，或把 `xml_edit_checks` 留空，都沒有完成剪輯點對齊。
+
+`adopt` 的 `endpoint` 預設為 `change`（前後字幕共同切換）；長停頓兩側可指定 `start` 或 `end`，只改指定字幕端點，不把空白填滿。`boundary_index` 仍是對應端點的全文字元索引。所有模式同樣受 5 幀、詞彙、主聲源及回聽證據限制，不能用尾端模式繞過它們。
+
+```bash
+python3 scripts/xml_cut_pipeline.py verify --srt final.srt --xml timeline.xml --report release.json
+```
+
+驗證讀取實際寫出的 SRT，核對輸入 XML／成品 hash、完整切點表與每個已採用端點。`timebase=30` 且 `ntsc=TRUE` 的精確幀率為 `30000/1001`，報告保存分子與分母；30 fps 不可代換。同幀四捨五入只用於識別 XML frame，命中必須距真實切點不超過 1 毫秒（容納 SRT 匯出取整），不能將同格內任意時間視為精確命中。
+
+已接入 `subtitle_context.py delivery` 的工作，只要選定來源含 XML timeline，就必須登記 `xml_cut_release` 交付角色；工具自動核對它與 `final_srt`、當版 XML。缺報告、候選報告、未處理切點或後續改掉已採用端點都阻擋交付。未接入 context 的舊案也必須直接執行上述 `verify`，在 job 記錄報告 hash 與結果，不重建案件分類。
+
+人工稿原樣重放仍標記 `human_reference_replay`。它不能證明每個人工剪輯點符合通用 5 幀門檻，也不能冒充自動生成命中率。沒有主聲源／回聽證據時，保留待確認，不為追求命中數硬吸附。

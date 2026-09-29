@@ -355,3 +355,5 @@ python3 scripts/revision_report.py \
 ## 版本與個人設定
 
 使用前在本公開倉庫檢查 GitHub 更新；乾淨工作樹只做 fast-forward，保留自行修改的內容。個人 API 授權、客戶詞彙與系列學習存放於自己的私人工作區，不提交到公開倉庫。
+
+有同版 XML 時，必須實際執行 `xml_cut_pipeline.py prepare`、逐點審查、`release` 與 `verify`。正式產稿使用已驗證輸出，並登記 `xml_cut_release`；不能僅將時間四捨五入到影格就跳過此階段。命令與交付檢查見下列切點審查文件。
